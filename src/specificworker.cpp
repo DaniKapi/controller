@@ -72,7 +72,7 @@ NavState SpecificWorker::getState()
 
 void SpecificWorker::stop()
 {
-
+  cout<<"hola desde el segundo componente"<<endl;
 }
 
 
