@@ -1,0 +1,1 @@
+/home/salabeta/DaniKapi/controller/src/CMakeFiles/controller.dir

@@ -23,7 +23,9 @@
 */
 SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 {
-
+  this->inner= new InnerModel("/home/salabeta/robocomp/files/innermodel/simpleworld.xml");
+  state = State::IDLE;
+  distancia=0;
 }
 
 /**
@@ -34,19 +36,94 @@ SpecificWorker::~SpecificWorker()
 	
 }
 
-bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
+
+
+
+bool SpecificWorker::he_Llegado()
+{
+  QVec r = QVec::vec3(tbase.x, 0, tbase.z);
+  float  distancia= (r-marca).norm2();
+  qDebug() << "marca" << marca;
+  cout<<"la distancia es: "<<distancia<<endl;
+  if( distancia < 300)
+    return true;
+  else
+    return false;
+  
+}
+
+
+bool SpecificWorker::hayCaminoLibre()
+{
+    
+     float distMarca = inner->transform("rgbd", marca, "world").norm2();
+     
+     for(auto x: ldata)
+     {
+	cout<<x.dist<<endl;
+	cout<<x.angle<<endl;
+	
+	if( x.dist =<  distMarca )
+	{
+	  cout<<"puedo ir directo"<<endl;
+	  return true;
+	}
+    }
+    return false;
+}
+
+void SpecificWorker::crearObjetivo()
 {
 
+}
+
+bool SpecificWorker::siHaySubOBjetivo()
+{
+
+}
 
 
-	
-	timer.start(Period);
+void SpecificWorker::MinionCurrando(){
+
+    if(he_Llegado()){
+      state=State::FINISH;
+    }else if(hayCaminoLibre()){
+      cout<<"subnormal"<<endl;
+    }else if(siHaySubOBjetivo()){
+    }else{
+      crearObjetivo();
+    }
+  
+  
+}
+
+bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
+{
+  timer.start(Period);
 
 	return true;
 }
 
 void SpecificWorker::compute()
 {
+ 
+  differentialrobot_proxy->getBaseState(tbase);
+  ldata = laser_proxy->getLaserData();
+  inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
+  
+  
+	switch(state){
+	  case State::IDLE:
+	    break;
+	  case State::WORKING:
+	    this->MinionCurrando();
+	    break;
+	  case State::FINISH:
+	    state=State::IDLE;
+	      break;
+	  
+	
+	}
 // 	try
 // 	{
 // 		camera_proxy->getYImage(0,img, cState, bState);
@@ -59,15 +136,42 @@ void SpecificWorker::compute()
 // 	}
 }
 
+//////////////////////////////////////////777
+////////////////////////////////////////////
+
 
 float SpecificWorker::go(const TargetPose &target)
 {
-
+      cout<<"entrando marca"<<endl;
+      QMutexLocker ml(&mutex);
+      marca = QVec::vec3(target.x, target.y, target.z);
+      if(state==State::IDLE)
+      {
+	state=State::WORKING;
+      }
+      return 0;
 }
 
 NavState SpecificWorker::getState()
 {
-
+  NavState estado;
+   QMutexLocker ml(&mutex);
+   switch(state){
+	  case State::IDLE:
+	    cout<<"-----ESTADO IDLE----"<<endl;
+	    estado.state="IDLE";
+	    break;
+	  case State::WORKING:
+	    cout<<"-----ESTADO WORKING---"<<endl;
+	    estado.state="WORKING";
+	    break;
+	  case State::FINISH:
+	    estado.state="FINISH";
+	    break;
+	
+	}
+	return estado;
+    
 }
 
 void SpecificWorker::stop()

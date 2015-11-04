@@ -47,9 +47,25 @@ public:
 	void stop();
 
 public slots:
-	void compute(); 	
+	void compute(); 
+	
 
 private:
+  QVec marca;
+  float distancia;
+  QMutex mutex;
+  bool hayObj;
+  float calcularDist(float x,float y);
+  void  MinionCurrando();
+  bool he_Llegado();
+  bool siHaySubOBjetivo();
+  void crearObjetivo();
+  bool hayCaminoLibre();
+  enum class State {IDLE, WORKING, FINISH};
+  State state;
+  TBaseState tbase;
+  TLaserData ldata;
+  InnerModel *inner;
 	
 };
 
