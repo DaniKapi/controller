@@ -17,6 +17,10 @@
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "specificworker.h"
+#include <cmath>
+
+const float ANCHO_ROBOT = 400;
+const float MARGEN = 100;
 
 /**
 * \brief Default constructor
@@ -41,35 +45,35 @@ SpecificWorker::~SpecificWorker()
 
 bool SpecificWorker::he_Llegado()
 {
-  QVec r = QVec::vec3(tbase.x, 0, tbase.z);
-  float  distancia= (r-marca).norm2();
-  qDebug() << "marca" << marca;
-  cout<<"la distancia es: "<<distancia<<endl;
-  if( distancia < 300)
-    return true;
-  else
-    return false;
-  
+    QVec r = QVec::vec3(tbase.x, 0, tbase.z);
+    float  distancia = (r-marca).norm2();
+    qDebug() << "Marca: " << marca << endl;
+    qDebug() << "- La distancia es: " << distancia << endl;
+    if( distancia < 300)
+      return true;
+    else
+      return false;
 }
 
 
 bool SpecificWorker::hayCaminoLibre()
 {
-    
-     float distMarca = inner->transform("rgbd", marca, "world").norm2();
-     
-     for(auto x: ldata)
-     {
-	cout<<x.dist<<endl;
-	cout<<x.angle<<endl;
-	
-	if( x.dist =<  distMarca )
-	{
-	  cout<<"puedo ir directo"<<endl;
-	  return true;
-	}
+  float x, z;   
+  for(auto p: ldata)
+  {
+    x = p.dist*sin(p.angle);
+    z = p.dist*cos(p.angle);
+    if((fabs(x) < (ANCHO_ROBOT/2 + MARGEN)) && (z < (ANCHO_ROBOT/2  + 200))){
+      return false;
     }
-    return false;
+  }
+  return true;
+}
+
+
+bool SpecificWorker::siHaySubOBjetivo()
+{
+  return true;
 }
 
 void SpecificWorker::crearObjetivo()
@@ -77,31 +81,27 @@ void SpecificWorker::crearObjetivo()
 
 }
 
-bool SpecificWorker::siHaySubOBjetivo()
+void SpecificWorker::irSubobjetivo()
 {
 
 }
 
+void SpecificWorker::crearSubObjetivo()
+{
 
-void SpecificWorker::MinionCurrando(){
+}
 
-    if(he_Llegado()){
-      state=State::FINISH;
-    }else if(hayCaminoLibre()){
-      cout<<"subnormal"<<endl;
-    }else if(siHaySubOBjetivo()){
-    }else{
-      crearObjetivo();
-    }
+void SpecificWorker::avanzar()
+{
+  qDebug("Avanzando");
   
-  
+
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
   timer.start(Period);
-
-	return true;
+  return true;
 }
 
 void SpecificWorker::compute()
@@ -111,38 +111,27 @@ void SpecificWorker::compute()
   ldata = laser_proxy->getLaserData();
   inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
   
-  
-	switch(state){
-	  case State::IDLE:
-	    break;
-	  case State::WORKING:
-	    this->MinionCurrando();
-	    break;
-	  case State::FINISH:
-	    state=State::IDLE;
-	      break;
-	  
-	
-	}
-// 	try
-// 	{
-// 		camera_proxy->getYImage(0,img, cState, bState);
-// 		memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
-// 		searchTags(image_gray);
-// 	}
-// 	catch(const Ice::Exception &e)
-// 	{
-// 		std::cout << "Error reading from Camera" << e << std::endl;
-// 	}
+  if(he_Llegado() == false)
+  {
+     if(hayCaminoLibre())
+     {
+       avanzar();
+     }
+     else if (siHaySubOBjetivo())
+     {
+       irSubobjetivo();
+     }
+     else
+       crearSubObjetivo();
+  } else {
+      
+  }
+
 }
-
-//////////////////////////////////////////777
-////////////////////////////////////////////
-
 
 float SpecificWorker::go(const TargetPose &target)
 {
-      cout<<"entrando marca"<<endl;
+      qDebug("Marca encontrada");
       QMutexLocker ml(&mutex);
       marca = QVec::vec3(target.x, target.y, target.z);
       if(state==State::IDLE)
@@ -154,29 +143,28 @@ float SpecificWorker::go(const TargetPose &target)
 
 NavState SpecificWorker::getState()
 {
-  NavState estado;
+   NavState estado;
    QMutexLocker ml(&mutex);
    switch(state){
 	  case State::IDLE:
-	    cout<<"-----ESTADO IDLE----"<<endl;
+	    qDebug("-----ESTADO IDLE----");
 	    estado.state="IDLE";
 	    break;
 	  case State::WORKING:
-	    cout<<"-----ESTADO WORKING---"<<endl;
+	    qDebug("-----ESTADO WORKING---");
 	    estado.state="WORKING";
 	    break;
 	  case State::FINISH:
+	    qDebug("-----ESTADO FINISH---");
 	    estado.state="FINISH";
 	    break;
-	
 	}
 	return estado;
-    
 }
 
 void SpecificWorker::stop()
 {
-  cout<<"hola desde el segundo componente"<<endl;
+  qDebug("Parado");
 }
 
 

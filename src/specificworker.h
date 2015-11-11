@@ -51,15 +51,18 @@ public slots:
 	
 
 private:
+  
   QVec marca;
   float distancia;
   QMutex mutex;
   bool hayObj;
   float calcularDist(float x,float y);
-  void  MinionCurrando();
   bool he_Llegado();
   bool siHaySubOBjetivo();
   void crearObjetivo();
+  void irSubobjetivo();
+  void crearSubObjetivo();
+  void avanzar();
   bool hayCaminoLibre();
   enum class State {IDLE, WORKING, FINISH};
   State state;
