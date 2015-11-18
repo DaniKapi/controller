@@ -14,7 +14,11 @@
  *    GNU General Public License for more details.
  *
  *    You should have received a copy of the GNU General Public License
- *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
+ *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.<
+ * 
+ * 
+ * 	CONTROLLER
+ * 
  */
 #include "specificworker.h"
 #include <cmath>
@@ -40,19 +44,28 @@ SpecificWorker::~SpecificWorker()
 	
 }
 
+/*bool SpecificWorker::hayMarca()
+{
+  if(marca != null);
+}*/
 
 
 
-bool SpecificWorker::he_Llegado()
+bool SpecificWorker::heLlegado()
 {
     QVec r = QVec::vec3(tbase.x, 0, tbase.z);
     float  distancia = (r-marca).norm2();
     qDebug() << "Marca: " << marca << endl;
-    qDebug() << "- La distancia es: " << distancia << endl;
     if( distancia < 300)
+    {
+      qDebug() << "Distancia: " << distancia << endl;
       return true;
+    }
     else
+    {
+      qDebug() << "Distancia: " << distancia << endl;
       return false;
+    }
 }
 
 
@@ -64,6 +77,7 @@ bool SpecificWorker::hayCaminoLibre()
     x = p.dist*sin(p.angle);
     z = p.dist*cos(p.angle);
     if((fabs(x) < (ANCHO_ROBOT/2 + MARGEN)) && (z < (ANCHO_ROBOT/2  + 200))){
+      
       return false;
     }
   }
@@ -93,9 +107,7 @@ void SpecificWorker::crearSubObjetivo()
 
 void SpecificWorker::avanzar()
 {
-  qDebug("Avanzando");
-  
-
+  //qDebug("Avanzando");
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -110,30 +122,28 @@ void SpecificWorker::compute()
   differentialrobot_proxy->getBaseState(tbase);
   ldata = laser_proxy->getLaserData();
   inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
-  
-  if(he_Llegado() == false)
-  {
-     if(hayCaminoLibre())
-     {
-       avanzar();
-     }
-     else if (siHaySubOBjetivo())
-     {
-       irSubobjetivo();
-     }
-     else
-       crearSubObjetivo();
-  } else {
-      
-  }
 
+  if(state == State::WORKING){
+    if(!heLlegado()) {
+      qDebug("A hacer cosas");
+      /*if(hayCaminoLibre()) {
+	avanzar();
+      }
+      else if (siHaySubOBjetivo()) {
+	irSubobjetivo();
+      } else { crearSubObjetivo(); }*/
+    } else {
+      qDebug("Ya he llegado tio, que quieres que haga xd");
+    }
+  }
+  
 }
 
 float SpecificWorker::go(const TargetPose &target)
 {
-      qDebug("Marca encontrada");
       QMutexLocker ml(&mutex);
       marca = QVec::vec3(target.x, target.y, target.z);
+      qDebug() << "Marca: " << marca <<endl;
       if(state==State::IDLE)
       {
 	state=State::WORKING;
@@ -164,7 +174,7 @@ NavState SpecificWorker::getState()
 
 void SpecificWorker::stop()
 {
-  qDebug("Parado");
+  //qDebug("Parado");
 }
 
 

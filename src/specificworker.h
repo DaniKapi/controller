@@ -57,7 +57,8 @@ private:
   QMutex mutex;
   bool hayObj;
   float calcularDist(float x,float y);
-  bool he_Llegado();
+  bool hayMarca();
+  bool heLlegado();
   bool siHaySubOBjetivo();
   void crearObjetivo();
   void irSubobjetivo();
