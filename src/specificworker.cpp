@@ -44,28 +44,14 @@ SpecificWorker::~SpecificWorker()
 	
 }
 
-/*bool SpecificWorker::hayMarca()
-{
-  if(marca != null);
-}*/
-
-
-
 bool SpecificWorker::heLlegado()
 {
-    QVec r = QVec::vec3(tbase.x, 0, tbase.z);
-    float  distancia = (r-marca).norm2();
-    qDebug() << "Marca: " << marca << endl;
-    if( distancia < 300)
-    {
-      qDebug() << "Distancia: " << distancia << endl;
-      return true;
-    }
-    else
-    {
-      qDebug() << "Distancia: " << distancia << endl;
-      return false;
-    }
+    QVec t = inner->transform("rgbd", marca, "world");
+    float distancia = t.norm2();
+    qDebug() << "Distancia: " << distancia;
+    if( distancia < 0.4) return true;
+    else return false;
+    
 }
 
 
@@ -118,37 +104,35 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 
 void SpecificWorker::compute()
 {
- 
-  differentialrobot_proxy->getBaseState(tbase);
-  ldata = laser_proxy->getLaserData();
-  inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
-
-  if(state == State::WORKING){
-    if(!heLlegado()) {
-      qDebug("A hacer cosas");
-      /*if(hayCaminoLibre()) {
-	avanzar();
+  try{
+    differentialrobot_proxy->getBaseState(tbase);
+    ldata = laser_proxy->getLaserData();
+    inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
+    
+    if(state == State::WORKING){
+      if(!heLlegado()) {
+	qDebug("A hacer cosas");
+	/*if(hayCaminoLibre()) {
+	  avanzar();
+	}
+	else if (siHaySubOBjetivo()) {
+	  irSubobjetivo();
+	} else { crearSubObjetivo(); }*/
+      } else {
+	qDebug("Ya he llegado");
       }
-      else if (siHaySubOBjetivo()) {
-	irSubobjetivo();
-      } else { crearSubObjetivo(); }*/
-    } else {
-      qDebug("Ya he llegado tio, que quieres que haga xd");
     }
+  } catch(const Ice::Exception &e){
+    std::cout << "Error leyendo de la camara" << e << std::endl;  
   }
   
 }
 
 float SpecificWorker::go(const TargetPose &target)
 {
-      QMutexLocker ml(&mutex);
-      marca = QVec::vec3(target.x, target.y, target.z);
-      qDebug() << "Marca: " << marca <<endl;
-      if(state==State::IDLE)
-      {
-	state=State::WORKING;
-      }
-      return 0;
+  QMutexLocker ml(&mutex);
+  marca = QVec::vec3(target.x, target.y, target.z);
+  state=State::WORKING;
 }
 
 NavState SpecificWorker::getState()
@@ -161,7 +145,7 @@ NavState SpecificWorker::getState()
 	    estado.state="IDLE";
 	    break;
 	  case State::WORKING:
-	    qDebug("-----ESTADO WORKING---");
+	    //qDebug("-----ESTADO WORKING---");
 	    estado.state="WORKING";
 	    break;
 	  case State::FINISH:
