@@ -111,7 +111,7 @@ void SpecificWorker::compute()
     
     if(state == State::WORKING){
       if(!heLlegado()) {
-	qDebug("A hacer cosas");
+	qDebug("No he llegado");
 	/*if(hayCaminoLibre()) {
 	  avanzar();
 	}
@@ -130,7 +130,7 @@ void SpecificWorker::compute()
 
 float SpecificWorker::go(const TargetPose &target)
 {
-  QMutexLocker ml(&mutex);
+  //QMutexLocker ml(&mutex);
   marca = QVec::vec3(target.x, target.y, target.z);
   state=State::WORKING;
 }
