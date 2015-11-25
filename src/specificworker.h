@@ -59,10 +59,13 @@ private:
   float calcularDist(float x,float y);
   bool heLlegado();
   bool siHaySubOBjetivo();
+ 
   void crearObjetivo();
   void irSubobjetivo();
   void crearSubObjetivo();
   void avanzar();
+  void parar();
+  void pararFinish();
   bool hayCaminoLibre();
   enum class State {IDLE, WORKING, FINISH};
   State state;

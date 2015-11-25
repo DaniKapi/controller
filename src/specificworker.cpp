@@ -49,7 +49,7 @@ bool SpecificWorker::heLlegado()
     QVec t = inner->transform("rgbd", marca, "world");
     float distancia = t.norm2();
     qDebug() << "Distancia: " << distancia;
-    if( distancia < 0.4) return true;
+    if( distancia < 400) return true;
     else return false;
     
 }
@@ -63,7 +63,6 @@ bool SpecificWorker::hayCaminoLibre()
     x = p.dist*sin(p.angle);
     z = p.dist*cos(p.angle);
     if((fabs(x) < (ANCHO_ROBOT/2 + MARGEN)) && (z < (ANCHO_ROBOT/2  + 200))){
-      
       return false;
     }
   }
@@ -73,7 +72,7 @@ bool SpecificWorker::hayCaminoLibre()
 
 bool SpecificWorker::siHaySubOBjetivo()
 {
-  return true;
+  return false;
 }
 
 void SpecificWorker::crearObjetivo()
@@ -88,12 +87,24 @@ void SpecificWorker::irSubobjetivo()
 
 void SpecificWorker::crearSubObjetivo()
 {
-
+  
+  for(auto p: ldata)
+  {
+    if(p.dist > ANCHO_ROBOT+100 && p.angle <0){
+	qDebug("tengo un punto");
+	cout<<p.dist<<endl;
+	cout <<p.angle<<endl;
+	
+      
+    }
+  
+  }
 }
 
 void SpecificWorker::avanzar()
 {
-  //qDebug("Avanzando");
+  qDebug("Avanzando");
+  differentialrobot_proxy->setSpeedBase(100,0);
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -111,15 +122,20 @@ void SpecificWorker::compute()
     
     if(state == State::WORKING){
       if(!heLlegado()) {
-	qDebug("No he llegado");
-	/*if(hayCaminoLibre()) {
-	  avanzar();
-	}
-	else if (siHaySubOBjetivo()) {
-	  irSubobjetivo();
-	} else { crearSubObjetivo(); }*/
+	      qDebug("No he llegado");
+	      if(hayCaminoLibre()) {
+		avanzar();
+	      }
+	      else {
+		parar();
+	      }
+	      
+	    if (siHaySubOBjetivo() && !hayCaminoLibre()) {
+		irSubobjetivo();
+	      } else { crearSubObjetivo(); }
       } else {
 	qDebug("Ya he llegado");
+	pararFinish();
       }
     }
   } catch(const Ice::Exception &e){
@@ -158,9 +174,24 @@ NavState SpecificWorker::getState()
 
 void SpecificWorker::stop()
 {
-  //qDebug("Parado");
+  qDebug("Parado");
+  differentialrobot_proxy->setSpeedBase(0,0); 
+  state=State::IDLE;
 }
 
+void SpecificWorker::parar()
+{
+  qDebug("Parado");
+  differentialrobot_proxy->setSpeedBase(0,0); 
+ }
+
+
+void SpecificWorker::pararFinish()
+{
+  qDebug("Parado");
+  differentialrobot_proxy->setSpeedBase(0,0); 
+  state=State::IDLE;
+}
 
 
 
