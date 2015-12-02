@@ -77,6 +77,7 @@ private:
   void pararFinish();
   bool hayCaminoLibre();
   bool hayCaminoLibrehaciaelObjetivo();
+	void hayCaminoLibreha();
   enum class State {IDLE, WORKING, FINISH};
   State state;
   TBaseState tbase;

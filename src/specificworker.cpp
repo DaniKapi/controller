@@ -59,7 +59,7 @@ bool SpecificWorker::heLlegado()
 }
 
 bool SpecificWorker::hayCaminoLibrehaciaelObjetivo(){
-  QVec t = inner->transform("robot", marca, "world");
+  QVec t = inner->transform("rgbd", marca, "world");
   float alpha = atan2(t.x(), t.z() );
   float distancia = t.norm2();
   bool encontrado = false;
@@ -188,17 +188,7 @@ void SpecificWorker::histogram()
 void SpecificWorker::avanzar()
 {
   qDebug("Avanzando");
-   QVec t = inner->transform("robot", marca, "world");
-  float alpha = atan2(t.x(), t.z() );
-  qDebug("Avanzando");
-  if(hayCaminoLibre()){
-    if(alpha < 0.1 && alpha > -0.1){
-      differentialrobot_proxy->setSpeedBase(100,0);
-    }else{
-    
-      differentialrobot_proxy->setSpeedBase(0,0.4);
-    }
-  }
+  differentialrobot_proxy->setSpeedBase(100,0);
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
