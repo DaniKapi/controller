@@ -36,6 +36,8 @@
 
 class SpecificWorker : public GenericWorker
 {
+  
+  
 Q_OBJECT
 public:
 	SpecificWorker(MapPrx& mprx);	
@@ -51,22 +53,30 @@ public slots:
 	
 
 private:
+  struct MarcaSubObjetivo{
+    QVec SubObjetivo;
+    bool activo;
+  };
   
+  MarcaSubObjetivo subObjetivo;
+  QGraphicsScene scene;
   QVec marca;
   float distancia;
   QMutex mutex;
   bool hayObj;
   float calcularDist(float x,float y);
   bool heLlegado();
-  bool siHaySubOBjetivo();
- 
+  bool HaySubOBjetivo();
+  void histogram();
   void crearObjetivo();
   void irSubobjetivo();
   void crearSubObjetivo();
+  void buscarPuntos(int &i, int &j);
   void avanzar();
   void parar();
   void pararFinish();
   bool hayCaminoLibre();
+  bool hayCaminoLibrehaciaelObjetivo();
   enum class State {IDLE, WORKING, FINISH};
   State state;
   TBaseState tbase;

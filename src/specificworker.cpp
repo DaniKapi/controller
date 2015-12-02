@@ -34,6 +34,10 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
   this->inner= new InnerModel("/home/salabeta/robocomp/files/innermodel/simpleworld.xml");
   state = State::IDLE;
   distancia=0;
+  graphicsView->setScene(&scene);
+  graphicsView->show();
+  graphicsView->scale(3,3);
+  subObjetivo.activo = false;
 }
 
 /**
@@ -54,6 +58,29 @@ bool SpecificWorker::heLlegado()
     
 }
 
+bool SpecificWorker::hayCaminoLibrehaciaelObjetivo(){
+  QVec t = inner->transform("robot", marca, "world");
+  float alpha = atan2(t.x(), t.z() );
+  float distancia = t.norm2();
+  bool encontrado = false;
+  int i;
+  for(i = 5; i<ldata.size() - 5; i++)
+  {
+    if(ldata[i].angle < alpha){
+      encontrado = true;
+      break;
+    }
+  }
+  
+  if(encontrado){
+    if(ldata[i].dist < distancia){
+      return false;
+    }
+  } else {
+    return false;
+  }
+  return true;      
+}
 
 bool SpecificWorker::hayCaminoLibre()
 {
@@ -70,41 +97,108 @@ bool SpecificWorker::hayCaminoLibre()
 }
 
 
-bool SpecificWorker::siHaySubOBjetivo()
+bool SpecificWorker::HaySubOBjetivo()
 {
-  return false;
-}
-
-void SpecificWorker::crearObjetivo()
-{
-
+  return subObjetivo.activo;
 }
 
 void SpecificWorker::irSubobjetivo()
 {
+  
+  
 
 }
 
 void SpecificWorker::crearSubObjetivo()
 {
-  
-  for(auto p: ldata)
-  {
-    if(p.dist > ANCHO_ROBOT+100 && p.angle <0){
-	qDebug("tengo un punto");
-	cout<<p.dist<<endl;
-	cout <<p.angle<<endl;
+	int i,j;
+  	parar();
+	buscarPuntos(i,j);
+	subObjetivo.SubObjetivo = inner->laserTo("world","laser",ldata[i].dist,ldata[i].angle);
+	qDebug() << subObjetivo.SubObjetivo;
+	subObjetivo.activo = true;
+
+}
+
+void SpecificWorker::buscarPuntos(int &i, int &j)
+{
+	//Search the first increasing step from the center to the right
+	const float R = 400; //Robot radius
+	for(i=(int)ldata.size()/2; i>0; i--)
+	{
+		if( (ldata[i].dist - ldata[i-1].dist) < -R )
+		{
+			int k=i-2;
+			while( (k > 0) and (fabs( ldata[k].dist*sin(ldata[k].angle - ldata[i-1].angle)) < R ))
+			{ k--; }
+			i=k;
+			break;
+		}
+	}
+	for(j=(int)ldata.size()/2; j<(int)ldata.size()-1; j++)
+	{
+		if( (ldata[j].dist - ldata[j+1].dist) < -R )
+		{
+			int k=j+2;
+			while( (k < (int)ldata.size()-1) and (fabs( ldata[k].dist*sin(ldata[k].angle - ldata[j+1].angle)) < R ))
+			{ k++; }
+			j=k;
+			break;
+		}
+	}  
+}
+
+void SpecificWorker::histogram()
+{	
+	static QGraphicsPolygonItem *p;
+	static QGraphicsLineItem *l, *sr, *sl, *safety;
+
+	const float SAFETY = 600;
+
+	scene.removeItem(p);
+	scene.removeItem(l);
+	scene.removeItem(sr);
+	scene.removeItem(sl);
+	scene.removeItem(safety);
+
+	int i, j;
+	buscarPuntos(i,j);
 	
-      
-    }
-  
-  }
+	safety = scene.addLine(QLine(QPoint(0,-SAFETY/100),QPoint(ldata.size(),-SAFETY/100)), QPen(QColor(Qt::yellow)));
+	sr = scene.addLine(QLine(QPoint(i,0),QPoint(i,-40)), QPen(QColor(Qt::blue)));
+	sl = scene.addLine(QLine(QPoint(j,0),QPoint(j,-40)), QPen(QColor(Qt::magenta)));
+	
+	//DRAW		
+	QPolygonF poly;
+	int x=0;
+	poly << QPointF(0, 0);
+	
+	for(auto d : ldata)
+		poly << QPointF(++x, -d.dist/100); // << QPointF(x+5, d.dist) << QPointF(x+5, 0);
+	poly << QPointF(x, 0);
+
+	l = scene.addLine(QLine(QPoint(ldata.size()/2,0),QPoint(ldata.size()/2,-20)), QPen(QColor(Qt::red)));
+	p = scene.addPolygon(poly, QPen(QColor(Qt::green)));
+	
+	scene.update();
+	
+	//select the best subtarget and return coordinates
 }
 
 void SpecificWorker::avanzar()
 {
   qDebug("Avanzando");
-  differentialrobot_proxy->setSpeedBase(100,0);
+   QVec t = inner->transform("robot", marca, "world");
+  float alpha = atan2(t.x(), t.z() );
+  qDebug("Avanzando");
+  if(hayCaminoLibre()){
+    if(alpha < 0.1 && alpha > -0.1){
+      differentialrobot_proxy->setSpeedBase(100,0);
+    }else{
+    
+      differentialrobot_proxy->setSpeedBase(0,0.4);
+    }
+  }
 }
 
 bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
@@ -119,29 +213,30 @@ void SpecificWorker::compute()
     differentialrobot_proxy->getBaseState(tbase);
     ldata = laser_proxy->getLaserData();
     inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
-    
+    histogram();
     if(state == State::WORKING){
-      if(!heLlegado()) {
-	      qDebug("No he llegado");
-	      if(hayCaminoLibre()) {
-		avanzar();
-	      }
-	      else {
-		parar();
-	      }
-	      
-	    if (siHaySubOBjetivo() && !hayCaminoLibre()) {
-		irSubobjetivo();
-	      } else { crearSubObjetivo(); }
-      } else {
-	qDebug("Ya he llegado");
+      if(heLlegado()) 
+      {
 	pararFinish();
+	return;
       }
+      if(hayCaminoLibre())
+      {
+	avanzar();
+	return;
+      }
+      if (HaySubOBjetivo())
+      {
+	irSubobjetivo();
+	return;
+      } 
+      crearSubObjetivo();
     }
   } catch(const Ice::Exception &e){
     std::cout << "Error leyendo de la camara" << e << std::endl;  
   }
-  
+ 
+
 }
 
 float SpecificWorker::go(const TargetPose &target)
