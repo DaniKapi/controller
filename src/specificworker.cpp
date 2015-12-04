@@ -52,7 +52,7 @@ bool SpecificWorker::heLlegado()
 {
     QVec t = inner->transform("rgbd", marca, "world");
     float distancia = t.norm2();
-    qDebug() << "Distancia: " << distancia;
+    //qDebug() << "Distancia: " << distancia;
     if( distancia < 400) return true;
     else return false;
     
@@ -207,6 +207,7 @@ void SpecificWorker::compute()
     if(state == State::WORKING){
       if(heLlegado()) 
       {
+	qDebug() << "Ya he llegado";
 	pararFinish();
 	return;
       }
@@ -231,7 +232,6 @@ void SpecificWorker::compute()
 
 float SpecificWorker::go(const TargetPose &target)
 {
-  //QMutexLocker ml(&mutex);
   marca = QVec::vec3(target.x, target.y, target.z);
   state=State::WORKING;
 }
@@ -266,19 +266,16 @@ void SpecificWorker::stop()
 
 void SpecificWorker::parar()
 {
-  qDebug("Parado");
+  qDebug("Parado por un obstáculo");
   differentialrobot_proxy->setSpeedBase(0,0); 
  }
 
 
 void SpecificWorker::pararFinish()
 {
-  qDebug("Parado");
+  qDebug("Paramos y esperamos a que el componente nos cambie el estado");
   differentialrobot_proxy->setSpeedBase(0,0); 
+  state=State::FINISH;
+  sleep(2);
   state=State::IDLE;
 }
-
-
-
-
-
