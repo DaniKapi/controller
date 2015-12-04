@@ -78,7 +78,7 @@ private:
   bool hayCaminoLibre();
   bool hayCaminoLibrehaciaelObjetivo();
 	void hayCaminoLibreha();
-  enum class State {IDLE, WORKING, FINISH};
+  enum class State {INIT, IDLE, WORKING, FINISH};
   State state;
   TBaseState tbase;
   TLaserData ldata;

@@ -199,35 +199,44 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 
 void SpecificWorker::compute()
 {
-  try{
+  try
+  {
     differentialrobot_proxy->getBaseState(tbase);
     ldata = laser_proxy->getLaserData();
     inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
     histogram();
-    if(state == State::WORKING){
-      if(heLlegado()) 
-      {
-	qDebug() << "Ya he llegado";
-	pararFinish();
-	return;
-      }
-      if(hayCaminoLibre())
-      {
-	avanzar();
-	return;
-      }
-      if (HaySubOBjetivo())
-      {
-	irSubobjetivo();
-	return;
-      } 
-      crearSubObjetivo();
+    
+    switch(state)
+    {
+      case State::INIT:
+	state = State::IDLE;
+	break;
+      case State::IDLE:
+	break;
+      case State::WORKING:
+	if(heLlegado()){
+	  qDebug() << "Ya he llegado";
+	  pararFinish();
+	  return;
+	}
+	if(hayCaminoLibre()){
+	  avanzar();
+	  return;
+	}
+	if (HaySubOBjetivo()){
+	  irSubobjetivo();
+	  return;
+	} 
+	crearSubObjetivo();
+	break;
+      case State::FINISH:
+	break;
+      
     }
   } catch(const Ice::Exception &e){
     std::cout << "Error leyendo de la camara" << e << std::endl;  
   }
  
-
 }
 
 float SpecificWorker::go(const TargetPose &target)
@@ -242,15 +251,12 @@ NavState SpecificWorker::getState()
    QMutexLocker ml(&mutex);
    switch(state){
 	  case State::IDLE:
-	    qDebug("-----ESTADO IDLE----");
 	    estado.state="IDLE";
 	    break;
 	  case State::WORKING:
-	    //qDebug("-----ESTADO WORKING---");
 	    estado.state="WORKING";
 	    break;
 	  case State::FINISH:
-	    qDebug("-----ESTADO FINISH---");
 	    estado.state="FINISH";
 	    break;
 	}
