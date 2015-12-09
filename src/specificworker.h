@@ -74,7 +74,6 @@ private:
   void buscarPuntos(int &i, int &j);
   void avanzar();
   void parar();
-  void pararFinish();
   bool hayCaminoLibre();
   bool hayCaminoLibrehaciaelObjetivo();
 	void hayCaminoLibreha();

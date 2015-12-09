@@ -50,12 +50,11 @@ SpecificWorker::~SpecificWorker()
 
 bool SpecificWorker::heLlegado()
 {
-    QVec t = inner->transform("rgbd", marca, "world");
+    QVec t = inner->transform("base", marca, "world");
     float distancia = t.norm2();
-    //qDebug() << "Distancia: " << distancia;
+    qDebug() << "Distancia: " << distancia;
     if( distancia < 400) return true;
     else return false;
-    
 }
 
 bool SpecificWorker::hayCaminoLibrehaciaelObjetivo(){
@@ -64,7 +63,7 @@ bool SpecificWorker::hayCaminoLibrehaciaelObjetivo(){
   float distancia = t.norm2();
   bool encontrado = false;
   int i;
-  for(i = 5; i<ldata.size() - 5; i++)
+  for(i = 5; i < (int) ldata.size() - 5; i++)
   {
     if(ldata[i].angle < alpha){
       encontrado = true;
@@ -204,6 +203,7 @@ void SpecificWorker::compute()
     differentialrobot_proxy->getBaseState(tbase);
     ldata = laser_proxy->getLaserData();
     inner->updateTransformValuesS("base",tbase.x,0,tbase.z,0,tbase.alpha,0);
+    
     histogram();
     
     switch(state)
@@ -211,12 +211,15 @@ void SpecificWorker::compute()
       case State::INIT:
 	state = State::IDLE;
 	break;
+	
       case State::IDLE:
 	break;
+	
       case State::WORKING:
 	if(heLlegado()){
 	  qDebug() << "Ya he llegado";
-	  pararFinish();
+	  parar();
+	  state = State::FINISH;
 	  return;
 	}
 	if(hayCaminoLibre()){
@@ -230,6 +233,8 @@ void SpecificWorker::compute()
 	crearSubObjetivo();
 	break;
       case State::FINISH:
+	  sleep(2);
+	  state=State::IDLE;
 	break;
       
     }
@@ -242,6 +247,7 @@ void SpecificWorker::compute()
 float SpecificWorker::go(const TargetPose &target)
 {
   marca = QVec::vec3(target.x, target.y, target.z);
+  marca.print("Marca");
   state=State::WORKING;
 }
 
@@ -250,17 +256,20 @@ NavState SpecificWorker::getState()
    NavState estado;
    QMutexLocker ml(&mutex);
    switch(state){
-	  case State::IDLE:
-	    estado.state="IDLE";
-	    break;
-	  case State::WORKING:
-	    estado.state="WORKING";
-	    break;
-	  case State::FINISH:
-	    estado.state="FINISH";
-	    break;
-	}
-	return estado;
+      case State::INIT:
+	estado.state="INIT";
+	break;
+      case State::IDLE:
+	estado.state="IDLE";
+	break;
+      case State::WORKING:
+	estado.state="WORKING";
+	break;
+      case State::FINISH:
+	estado.state="FINISH";
+	break;
+    }
+    return estado;
 }
 
 void SpecificWorker::stop()
@@ -272,16 +281,13 @@ void SpecificWorker::stop()
 
 void SpecificWorker::parar()
 {
-  qDebug("Parado por un obstáculo");
-  differentialrobot_proxy->setSpeedBase(0,0); 
- }
+  try
+  {
+    differentialrobot_proxy->setSpeedBase(0,0); 
+  } catch(Ice::Exception &ex) 
+  {
+    std::cout<<ex.what()<<std::endl;
+   
+  };
 
-
-void SpecificWorker::pararFinish()
-{
-  qDebug("Paramos y esperamos a que el componente nos cambie el estado");
-  differentialrobot_proxy->setSpeedBase(0,0); 
-  state=State::FINISH;
-  sleep(2);
-  state=State::IDLE;
 }
