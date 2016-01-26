@@ -12,8 +12,6 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/salabeta/DaniKapi/controller/src/controllerI.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/controllerI.cpp.o"
   "/home/salabeta/DaniKapi/controller/src/genericmonitor.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/genericmonitor.cpp.o"
   "/home/salabeta/DaniKapi/controller/src/genericworker.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/genericworker.cpp.o"
-  "/home/salabeta/robocomp/classes/qlog/qlog.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/home/salabeta/robocomp/classes/qlog/qlog.cpp.o"
-  "/home/salabeta/robocomp/classes/rapplication/rapplication.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/home/salabeta/robocomp/classes/rapplication/rapplication.cpp.o"
   "/home/salabeta/DaniKapi/controller/src/main.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/main.cpp.o"
   "/home/salabeta/DaniKapi/controller/build/src/moc_commonbehaviorI.cxx" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/moc_commonbehaviorI.cxx.o"
   "/home/salabeta/DaniKapi/controller/build/src/moc_controllerI.cxx" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/moc_controllerI.cxx.o"
@@ -21,6 +19,8 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/salabeta/DaniKapi/controller/build/src/moc_genericworker.cxx" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/moc_genericworker.cxx.o"
   "/home/salabeta/DaniKapi/controller/build/src/moc_specificmonitor.cxx" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/moc_specificmonitor.cxx.o"
   "/home/salabeta/DaniKapi/controller/build/src/moc_specificworker.cxx" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/moc_specificworker.cxx.o"
+  "/opt/robocomp/classes/qlog/qlog.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/opt/robocomp/classes/qlog/qlog.cpp.o"
+  "/opt/robocomp/classes/rapplication/rapplication.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/opt/robocomp/classes/rapplication/rapplication.cpp.o"
   "/home/salabeta/DaniKapi/controller/src/specificmonitor.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/specificmonitor.cpp.o"
   "/home/salabeta/DaniKapi/controller/src/specificworker.cpp" "/home/salabeta/DaniKapi/controller/build/src/CMakeFiles/controller.dir/specificworker.cpp.o"
   )
@@ -61,9 +61,9 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "/opt/robocomp/include"
   "/classes"
   "."
-  "/home/salabeta/robocomp/classes"
-  "/home/salabeta/robocomp/libs"
-  "/home/salabeta/robocomp/interfaces"
+  "/opt/robocomp/classes"
+  "/opt/robocomp/libs"
+  "/opt/robocomp/interfaces"
   "/include"
   )
 set(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

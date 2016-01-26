@@ -13,6 +13,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QGraphicsView>
 #include <QtGui/QHeaderView>
 #include <QtGui/QWidget>
 
@@ -21,12 +22,16 @@ QT_BEGIN_NAMESPACE
 class Ui_guiDlg
 {
 public:
+    QGraphicsView *graphicsView;
 
     void setupUi(QWidget *guiDlg)
     {
         if (guiDlg->objectName().isEmpty())
             guiDlg->setObjectName(QString::fromUtf8("guiDlg"));
         guiDlg->resize(400, 300);
+        graphicsView = new QGraphicsView(guiDlg);
+        graphicsView->setObjectName(QString::fromUtf8("graphicsView"));
+        graphicsView->setGeometry(QRect(70, 30, 256, 192));
 
         retranslateUi(guiDlg);
 

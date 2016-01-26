@@ -79,20 +79,20 @@ void __patch(ControllerPtr&, const ::Ice::ObjectPtr&);
 namespace RoboCompController
 {
 
-  struct TargetPose
-  {
-      ::Ice::Float x;
-      ::Ice::Float y;
-      ::Ice::Float z;
-  };
+struct TargetPose
+{
+    ::Ice::Float x;
+    ::Ice::Float y;
+    ::Ice::Float z;
+};
 
-  struct NavState
-  {
-      ::Ice::Long elapsedTime;
-      ::std::string state;
-      ::Ice::Long estimatedTime;
-      ::Ice::Float distanceToTarget;
-  };
+struct NavState
+{
+    ::Ice::Long elapsedTime;
+    ::std::string state;
+    ::Ice::Long estimatedTime;
+    ::Ice::Float distanceToTarget;
+};
 
 }
 

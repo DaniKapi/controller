@@ -48,37 +48,19 @@ SpecificWorker::~SpecificWorker()
 	
 }
 
+bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
+{
+  timer.start(Period);
+  return true;
+}
+
 bool SpecificWorker::heLlegado()
 {
-    QVec t = inner->transform("base", marca, "world");
+    QVec t = inner->transform("rgbd", marca, "world");
     float distancia = t.norm2();
     qDebug() << "Distancia: " << distancia;
     if( distancia < 400) return true;
     else return false;
-}
-
-bool SpecificWorker::hayCaminoLibrehaciaelObjetivo(){
-  QVec t = inner->transform("rgbd", marca, "world");
-  float alpha = atan2(t.x(), t.z() );
-  float distancia = t.norm2();
-  bool encontrado = false;
-  int i;
-  for(i = 5; i < (int) ldata.size() - 5; i++)
-  {
-    if(ldata[i].angle < alpha){
-      encontrado = true;
-      break;
-    }
-  }
-  
-  if(encontrado){
-    if(ldata[i].dist < distancia){
-      return false;
-    }
-  } else {
-    return false;
-  }
-  return true;      
 }
 
 bool SpecificWorker::hayCaminoLibre()
@@ -88,7 +70,7 @@ bool SpecificWorker::hayCaminoLibre()
   {
     x = p.dist*sin(p.angle);
     z = p.dist*cos(p.angle);
-    if((fabs(x) < (ANCHO_ROBOT/2 + MARGEN)) && (z < (ANCHO_ROBOT/2  + 200))){
+    if((fabs(x) < (ANCHO_ROBOT/2 + MARGEN)) && (z < (ANCHO_ROBOT/2  + 400))){
       return false;
     }
   }
@@ -103,9 +85,24 @@ bool SpecificWorker::HaySubOBjetivo()
 
 void SpecificWorker::irSubobjetivo()
 {
-  
-  
-
+    QVec t = inner->transform("laser", subObjetivo.SubObjetivo, "world");
+    float alpha =atan2(t.x(), t.z());
+    float r= 0.4*alpha;
+    float d = t.norm2();
+   
+    if(d<100)
+    {
+      subObjetivo.activo=false;
+      differentialrobot_proxy->setSpeedBase(0,0);
+      sleep(1);
+    }
+    else
+    {
+      if( fabs(r) > 0.2) d = 0;
+      if(d>300)d=300;
+      differentialrobot_proxy->setSpeedBase(d,r);
+    }
+    
 }
 
 void SpecificWorker::crearSubObjetivo()
@@ -187,14 +184,15 @@ void SpecificWorker::histogram()
 void SpecificWorker::avanzar()
 {
   qDebug("Avanzando");
-  differentialrobot_proxy->setSpeedBase(100,0);
+  try
+  {
+    differentialrobot_proxy->setSpeedBase(100,0); 
+  } catch(Ice::Exception &ex) 
+  {
+    std::cout<<ex.what()<<std::endl;
+  };
 }
 
-bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
-{
-  timer.start(Period);
-  return true;
-}
 
 void SpecificWorker::compute()
 {
@@ -220,15 +218,14 @@ void SpecificWorker::compute()
 	  qDebug() << "Ya he llegado";
 	  parar();
 	  state = State::FINISH;
-	  return;
 	}
-	if(hayCaminoLibre()){
+	else if(hayCaminoLibre())
+	{
 	  avanzar();
-	  return;
 	}
-	if (HaySubOBjetivo()){
+	else if (HaySubOBjetivo())
+	{
 	  irSubobjetivo();
-	  return;
 	} 
 	crearSubObjetivo();
 	break;
